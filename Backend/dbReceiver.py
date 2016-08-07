@@ -43,8 +43,8 @@ def on_message(mqttc, obj, msg):
     print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
 
     # Create a connection and cursor with the DB
-    mongo_client = MongoClient()  #For Localhost use only
-    db = mongo_client['smart-plug-db']
+    mongo_client = MongoClient('mongodb://heroku_p72xffsz:0-7Vm5Tm9LRm8CNCi5O908ViT33BfqED@ds012345.mlab.com:56789/heroku_p72xffsz')  #For Localhost use only
+    db = mongo_client['heroku_p72xffsz']
     collection = db['data']
     # dbConnection = sqlite3.connect("C:\Users\Robotics.Phd\.ssh\Documents\DataBases\SmartPlugData.db")
     # dbCursor = dbConnection.cursor()
