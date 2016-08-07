@@ -57,6 +57,7 @@ def on_message(mqttc, obj, msg):
     # dbCursor.execute("INSERT INTO rawData VALUES (?,'0','on','turn_on','120.0','1.0','120.0','0','off','turn_on')", sTimeStamp)
     payload = json.loads(msg.payload)
     payload['timestamp'] = sTimeStamp
+    
     collection.insert_one(payload)
     # Save (commit) the changes
     # dbConnection.commit()
