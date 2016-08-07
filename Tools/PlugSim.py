@@ -31,39 +31,13 @@
 #         sys.path.insert(0, cmd_subfolder)
 #     import paho.mqtt.client as mqtt
 
-import paho.mqtt.client as mqtt # MQTT protocol interface
-from pymongo import MongoClient #DB interface
-import time
-import json
+import paho.mqtt.client as mqtt
 
 def on_connect(mqttc, obj, flags, rc):
     print("rc: "+str(rc))
 
 def on_message(mqttc, obj, msg):
     print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
-
-    # Create a connection and cursor with the DB
-    mongo_client = MongoClient()  #For Localhost use only
-    db = mongo_client['smart-plug-db']
-    collection = db['data']
-    # dbConnection = sqlite3.connect("C:\Users\Robotics.Phd\.ssh\Documents\DataBases\SmartPlugData.db")
-    # dbCursor = dbConnection.cursor()
-
-    # Get timestamp in EPOCH/UTC
-    sTime = time.time() # Seconds since EPOCH
-    sTimeStamp = (sTime,) # To avoid HACKERS
-
-    # Insert a row of data
-    # dbCursor.execute("INSERT INTO rawData VALUES (?,'0','on','turn_on','120.0','1.0','120.0','0','off','turn_on')", sTimeStamp)
-    payload = json.loads(msg.payload)
-    payload['timestamp'] = sTimeStamp
-    collection.insert_one(payload)
-    # Save (commit) the changes
-    # dbConnection.commit()
-
-	# We can also close the connection if we are done with it.
-	# Just be sure any changes have been committed or they will be lost.
-    # dbConnection.close()
 
 def on_publish(mqttc, obj, mid):
     print("mid: "+str(mid))
@@ -92,7 +66,6 @@ mqttc.on_subscribe = on_subscribe
 mqttc.username_pw_set('iajmzgae', 'bNl5xzae8mox')
 mqttc.connect("m12.cloudmqtt.com", 16186, 60)
 mqttc.subscribe("SmartPlug", 0)
-mqttc.subscribe("SmartPlugData", 0)
 
 mqttc.loop_forever()
 
