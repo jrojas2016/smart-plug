@@ -43,6 +43,7 @@ def on_message(mqttc, obj, msg):
     print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
 
     # Create a connection and cursor with the DB
+    print "Connecting to DB..."
     mongo_client = MongoClient('mongodb://heroku_p72xffsz:0-7Vm5Tm9LRm8CNCi5O908ViT33BfqED@ds012345.mlab.com:56789/heroku_p72xffsz')  #For Localhost use only
     db = mongo_client['heroku_p72xffsz']
     collection = db['data']
@@ -55,10 +56,11 @@ def on_message(mqttc, obj, msg):
 
     # Insert a row of data
     # dbCursor.execute("INSERT INTO rawData VALUES (?,'0','on','turn_on','120.0','1.0','120.0','0','off','turn_on')", sTimeStamp)
+    print "Parsing payload..."
     payload = json.loads(msg.payload)
     payload['timestamp'] = sTimeStamp
-    
     collection.insert_one(payload)
+    print "Data saved to DB!"
     # Save (commit) the changes
     # dbConnection.commit()
 
