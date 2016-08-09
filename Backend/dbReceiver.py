@@ -53,6 +53,10 @@ def runMQTTC(mqttc):
 
    	sched.start()
 
+def wait():
+	while True:
+		pass
+
 def on_connect(mqttc, obj, flags, rc):
 	print("rc: "+str(rc))
 
@@ -118,5 +122,6 @@ mqttc.subscribe("SmartPlug", 0)
 mqttc.subscribe("SmartPlugData", 0)
 
 runMQTTC(mqttc)
+wait()
 # mqttc.loop_forever()
 
