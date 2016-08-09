@@ -31,62 +31,71 @@
 #         sys.path.insert(0, cmd_subfolder)
 #     import paho.mqtt.client as mqtt
 
+import apscheduler.schedulers.background as bg
 import paho.mqtt.client as mqtt # MQTT protocol interface
 from pymongo import MongoClient #DB interface
 import multiprocessing as mp
 import time
 import json
 
-def avoidTimout():
-    print "SmartPlug Server Running"
-    time.sleep(25)
-    while True:
-        print "t"
-        time.sleep(50)
+def runMQTTC(mqttc):
+	sched = bg.BackgroundScheduler()
+
+	@sched.scheduled_job('interval', seconds = 25)
+	def restartMQTTC():
+		print "Starting mqttc"
+		p = mp.Process(target = mqttc.loop_forever)
+		p.start()
+		p.join(timeout = 20)
+		if p.is_alive():
+			print "Terminating mqttc"
+   			p.terminate()
+
+   	sched.start()
 
 def on_connect(mqttc, obj, flags, rc):
-    print("rc: "+str(rc))
+	print("rc: "+str(rc))
 
 def on_message(mqttc, obj, msg):
-    print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
+	print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
 
-    # Create a connection and cursor with the DB
-    print "Connecting to DB..."
-    mongo_client = MongoClient('mongodb://heroku_p72xffsz:nnhjpmb6hhu0kuf5eojdhrsp8k@ds145315.mlab.com:45315/heroku_p72xffsz')  #For Localhost use only
-    db = mongo_client['heroku_p72xffsz']
-    collection = db['data']
-    # mongo_client = MongoClient()  #Local use only
-    # db = mongo_client['serial-plug-data']
-    # collection = db['data']
-    # dbConnection = sqlite3.connect("C:\Users\Robotics.Phd\.ssh\Documents\DataBases\SmartPlugData.db")
-    # dbCursor = dbConnection.cursor()
+	# Create a connection and cursor with the DB
+	print "Connecting to DB..."
+	mongo_client = MongoClient('mongodb://heroku_p72xffsz:nnhjpmb6hhu0kuf5eojdhrsp8k@ds145315.mlab.com:45315/heroku_p72xffsz')  #For Localhost use only
+	db = mongo_client['heroku_p72xffsz']
+	collection = db['data']
+	# mongo_client = MongoClient()  #Local use only
+	# db = mongo_client['serial-plug-data']
+	# collection = db['data']
+	# dbConnection = sqlite3.connect("C:\Users\Robotics.Phd\.ssh\Documents\DataBases\SmartPlugData.db")
+	# dbCursor = dbConnection.cursor()
 
-    # Get timestamp in EPOCH/UTC
-    sTime = time.time() # Seconds since EPOCH
-    sTimeStamp = (sTime,) # To avoid HACKERS
+	# Get timestamp in EPOCH/UTC
+	sTime = time.time() # Seconds since EPOCH
+	sTimeStamp = (sTime,) # To avoid HACKERS
 
-    # Insert a row of data
-    # dbCursor.execute("INSERT INTO rawData VALUES (?,'0','on','turn_on','120.0','1.0','120.0','0','off','turn_on')", sTimeStamp)
-    print "Parsing payload..."
-    payload = json.loads(msg.payload)
-    payload['timestamp'] = sTimeStamp
-    collection.insert_one(payload)
-    print "Data saved to DB!"
-    # Save (commit) the changes
-    # dbConnection.commit()
+	# Insert a row of data
+	# dbCursor.execute("INSERT INTO rawData VALUES (?,'0','on','turn_on','120.0','1.0','120.0','0','off','turn_on')", sTimeStamp)
+	print "Parsing payload..."
+	payload = json.loads(msg.payload)
+	payload['timestamp'] = sTimeStamp
+	collection.insert_one(payload)
+	print "Data saved to DB!"
+	# Save (commit) the changes
+	# dbConnection.commit()
 
 	# We can also close the connection if we are done with it.
 	# Just be sure any changes have been committed or they will be lost.
-    # dbConnection.close()
+	# dbConnection.close()
 
 def on_publish(mqttc, obj, mid):
-    print("mid: "+str(mid))
+	print("mid: "+str(mid))
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
-    print("Subscribed: "+str(mid)+" "+str(granted_qos))
+	print("Subscribed: "+str(mid)+" "+str(granted_qos))
 
 def on_log(mqttc, obj, level, string):
-    print(string)
+	print(string)
 
 # If you want to use a specific client id, use
 # mqttc = mqtt.Client("client-id")
@@ -108,8 +117,6 @@ mqttc.connect("m12.cloudmqtt.com", 16186, 60)
 mqttc.subscribe("SmartPlug", 0)
 mqttc.subscribe("SmartPlugData", 0)
 
-p = mp.Process(target = mqttc.loop_forever(), args = () )
-p.start()
-# avoidTimout()
+runMQTTC(mqttc)
 # mqttc.loop_forever()
 
