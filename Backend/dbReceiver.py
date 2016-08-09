@@ -46,16 +46,12 @@ def runMQTTC(mqttc):
 		print "Starting mqttc"
 		p = mp.Process(target = mqttc.loop_forever)
 		p.start()
-		p.join(timeout = 20)
+		p.get(timeout = 25)
 		if p.is_alive():
 			print "Terminating mqttc"
    			p.terminate()
 
    	sched.start()
-
-def wait():
-	while True:
-		pass
 
 def on_connect(mqttc, obj, flags, rc):
 	print("rc: "+str(rc))
@@ -64,13 +60,14 @@ def on_message(mqttc, obj, msg):
 	print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
 
 	# Create a connection and cursor with the DB
-	print "Connecting to DB..."
-	mongo_client = MongoClient('mongodb://heroku_p72xffsz:nnhjpmb6hhu0kuf5eojdhrsp8k@ds145315.mlab.com:45315/heroku_p72xffsz')  #For Localhost use only
+	print "Connecting to DB."
+	mongo_client = MongoClient('mongodb://heroku_p72xffsz:nnhjpmb6hhu0kuf5eojdhrsp8k@ds145315.mlab.com:45315/heroku_p72xffsz')
 	db = mongo_client['heroku_p72xffsz']
 	collection = db['data']
 	# mongo_client = MongoClient()  #Local use only
 	# db = mongo_client['serial-plug-data']
 	# collection = db['data']
+
 	# dbConnection = sqlite3.connect("C:\Users\Robotics.Phd\.ssh\Documents\DataBases\SmartPlugData.db")
 	# dbCursor = dbConnection.cursor()
 
@@ -80,13 +77,12 @@ def on_message(mqttc, obj, msg):
 
 	# Insert a row of data
 	# dbCursor.execute("INSERT INTO rawData VALUES (?,'0','on','turn_on','120.0','1.0','120.0','0','off','turn_on')", sTimeStamp)
-	print "Parsing payload..."
+	# Save (commit) the changes
+	# dbConnection.commit()
 	payload = json.loads(msg.payload)
 	payload['timestamp'] = sTimeStamp
 	collection.insert_one(payload)
 	print "Data saved to DB!"
-	# Save (commit) the changes
-	# dbConnection.commit()
 
 	# We can also close the connection if we are done with it.
 	# Just be sure any changes have been committed or they will be lost.
@@ -121,7 +117,8 @@ mqttc.connect("m12.cloudmqtt.com", 16186, 60)
 mqttc.subscribe("SmartPlug", 0)
 mqttc.subscribe("SmartPlugData", 0)
 
-runMQTTC(mqttc)
-wait()
-# mqttc.loop_forever()
+mqttc.loop_forever()
+#Going to need either flask application, scheduler,
+#or some wrapper to avoid timeout with Heroku.
+# runMQTTC(mqttc)
 
