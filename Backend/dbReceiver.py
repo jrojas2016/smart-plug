@@ -44,9 +44,12 @@ def on_message(mqttc, obj, msg):
 
     # Create a connection and cursor with the DB
     print "Connecting to DB..."
-    mongo_client = MongoClient('mongodb://heroku_p72xffsz:0-7Vm5Tm9LRm8CNCi5O908ViT33BfqED@ds012345.mlab.com:56789/heroku_p72xffsz')  #For Localhost use only
+    mongo_client = MongoClient('mongodb://heroku_p72xffsz:nnhjpmb6hhu0kuf5eojdhrsp8k@ds145315.mlab.com:45315/heroku_p72xffsz')  #For Localhost use only
     db = mongo_client['heroku_p72xffsz']
     collection = db['data']
+    # mongo_client = MongoClient()  #Local use only
+    # db = mongo_client['serial-plug-data']
+    # collection = db['data']
     # dbConnection = sqlite3.connect("C:\Users\Robotics.Phd\.ssh\Documents\DataBases\SmartPlugData.db")
     # dbCursor = dbConnection.cursor()
 
