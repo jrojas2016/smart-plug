@@ -33,8 +33,16 @@
 
 import paho.mqtt.client as mqtt # MQTT protocol interface
 from pymongo import MongoClient #DB interface
+import multiprocessing as mp
 import time
 import json
+
+def avoidTimout():
+    print "SmartPlug Server Running"
+    time.sleep(25)
+    while True:
+        print "t"
+        time.sleep(50)
 
 def on_connect(mqttc, obj, flags, rc):
     print("rc: "+str(rc))
@@ -100,5 +108,8 @@ mqttc.connect("m12.cloudmqtt.com", 16186, 60)
 mqttc.subscribe("SmartPlug", 0)
 mqttc.subscribe("SmartPlugData", 0)
 
-mqttc.loop_forever()
+p = mp.Process(target = mqttc.loop_forever(), args = () )
+p.start()
+# avoidTimout()
+# mqttc.loop_forever()
 
