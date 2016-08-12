@@ -129,7 +129,7 @@ def on_message(mqttc, obj, msg):
 @app.before_first_request
 def setupScheduler(*args, **kwargs):
 	sched = bg.BackgroundScheduler()
-	
+
 	# If you want to use a specific client id, use
 	# mqttc = mqtt.Client("client-id")
 	# but note that the client id must be unique on the broker. Leaving the client
@@ -157,7 +157,7 @@ def setupScheduler(*args, **kwargs):
 		print res
 		return res	
 
-	@sched.scheduled_job('interval', minutes = 30)
+	@sched.scheduled_job('interval', minutes = 1)
 	def restartMQTTC():
 		p = mp.Process(target = mqttc.loop_forever)
 		p.start()
