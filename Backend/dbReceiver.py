@@ -41,6 +41,8 @@ import urllib2
 import time
 import json
 import sys
+import os
+sys.path.append(os.getcwd())
 
 app = fl.Flask(__name__)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -57,7 +59,8 @@ h.setFormatter(fmt)
 log.addHandler(h)
 log2.addHandler(h)
 
-HOST_URL = 'http://localhost:5000/'
+# HOST_URL = 'http://localhost:5000/'	#Local use only
+HOST_URL = 'http://smart-plug.herokuapp.com/'
 
 '''Utilities'''
 def curl( url, data = None, authToken = None ):
@@ -169,12 +172,14 @@ def setupScheduler(*args, **kwargs):
 def wakeServer():
 	return "<span>MQTT up and running!</span>"
 
-def main():
+def startServer():
+	time.sleep(10)	# Wait for flask app initialization
 	res = curl(HOST_URL)
 	print "Initial MQTT wakeup."
 
 if __name__ == '__main__':
-	# main()
+	p = mp.Process(target = startServer)
+	p.start()
 	app.logger.addHandler(logging.StreamHandler(sys.stdout))
 	app.logger.setLevel(logging.ERROR)
 	app.run(debug=True, use_reloader=False)
