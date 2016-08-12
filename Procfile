@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath Backend dbReceiver:dbReceiver --log-file=-
+web: gunicorn --pythonpath Backend app:app --log-file=-
