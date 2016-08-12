@@ -149,6 +149,8 @@ def setupScheduler(*args, **kwargs):
 	mqttc.connect("m12.cloudmqtt.com", 16186, 60)
 	mqttc.subscribe("SmartPlug", 0)
 	mqttc.subscribe("SmartPlugData", 0)
+	p = mp.Process(target = mqttc.loop_forever)
+	p.start()
 
 	@sched.scheduled_job('interval', seconds = 50)
 	def nudgeServer():
@@ -157,14 +159,12 @@ def setupScheduler(*args, **kwargs):
 		print res
 		return res	
 
-	@sched.scheduled_job('interval', minutes = 1)
-	def restartMQTTC():
-		p = mp.Process(target = mqttc.loop_forever)
-		p.start()
-		p.join(timeout = 59)
-		if p.is_alive():
-			print "Terminating mqttc"
-   			p.terminate()
+	# @sched.scheduled_job('interval', minutes = 1)
+	# def restartMQTTC():
+	# 	p.join(timeout = 59)
+	# 	if p.is_alive():
+	# 		print "Terminating mqttc"
+ 			# p.terminate()
 
    	sched.start()
 
