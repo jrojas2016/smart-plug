@@ -1,3 +1,4 @@
+Flask==0.10.1
 paho-mqtt==1.2
 gunicorn==19.3.0
 pymongo==3.0.3
