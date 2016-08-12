@@ -129,6 +129,26 @@ def on_message(mqttc, obj, msg):
 @app.before_first_request
 def setupScheduler(*args, **kwargs):
 	sched = bg.BackgroundScheduler()
+	
+	# If you want to use a specific client id, use
+	# mqttc = mqtt.Client("client-id")
+	# but note that the client id must be unique on the broker. Leaving the client
+	# id parameter empty will generate a random id for you.
+	mqttc = mqtt.Client()
+	mqttc.on_message = on_message
+	mqttc.on_connect = on_connect
+	mqttc.on_publish = on_publish
+	mqttc.on_subscribe = on_subscribe
+	# Uncomment to enable debug messages
+	# mqttc.on_log = on_log
+	# mqttc.connect("m2m.eclipse.org", 1883, 60)
+	# mqttc.subscribe("$SYS/#", 0)
+
+	# mqttc.username_pw_set('bmzrmflw', 'h7hmUII91mvS')
+	mqttc.username_pw_set('iajmzgae', 'bNl5xzae8mox')
+	mqttc.connect("m12.cloudmqtt.com", 16186, 60)
+	mqttc.subscribe("SmartPlug", 0)
+	mqttc.subscribe("SmartPlugData", 0)
 
 	@sched.scheduled_job('interval', seconds = 50)
 	def nudgeServer():
@@ -137,28 +157,8 @@ def setupScheduler(*args, **kwargs):
 		print res
 		return res	
 
-	@sched.scheduled_job('interval', minutes = 1)
+	@sched.scheduled_job('interval', minutes = 30)
 	def restartMQTTC():
-		# If you want to use a specific client id, use
-		# mqttc = mqtt.Client("client-id")
-		# but note that the client id must be unique on the broker. Leaving the client
-		# id parameter empty will generate a random id for you.
-		mqttc = mqtt.Client()
-		mqttc.on_message = on_message
-		mqttc.on_connect = on_connect
-		mqttc.on_publish = on_publish
-		mqttc.on_subscribe = on_subscribe
-		# Uncomment to enable debug messages
-		# mqttc.on_log = on_log
-		# mqttc.connect("m2m.eclipse.org", 1883, 60)
-		# mqttc.subscribe("$SYS/#", 0)
-
-		# mqttc.username_pw_set('bmzrmflw', 'h7hmUII91mvS')
-		mqttc.username_pw_set('iajmzgae', 'bNl5xzae8mox')
-		mqttc.connect("m12.cloudmqtt.com", 16186, 60)
-		mqttc.subscribe("SmartPlug", 0)
-		mqttc.subscribe("SmartPlugData", 0)
-		print "Starting mqttc"
 		p = mp.Process(target = mqttc.loop_forever)
 		p.start()
 		p.join(timeout = 59)
@@ -178,8 +178,9 @@ def startServer():
 	print "Initial MQTT wakeup."
 
 if __name__ == '__main__':
-	p = mp.Process(target = startServer)
-	p.start()
+	# TODO: start server without request on browser
+	# p = mp.Process(target = startServer)
+	# p.start()
 	app.logger.addHandler(logging.StreamHandler(sys.stdout))
 	app.logger.setLevel(logging.ERROR)
 	app.run(debug=True, use_reloader=False)
